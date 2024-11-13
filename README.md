@@ -24,7 +24,7 @@ Como Usar
 Licença
 Este projeto está licenciado sob a MIT License.
 
-Projeto desenvolvido por Universitario.
+Projeto desenvolvido por Universitarios.
 
 
 
