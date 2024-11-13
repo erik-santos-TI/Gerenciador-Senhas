@@ -2,39 +2,92 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, initial-scale=1, minimum-scale=1, maximum-scale=1">
     <title>Gerenciador de Senhas 🔐</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #b3e0ff; /* azul bebê */
+            background-color: #b3e0ff;
             color: #000000;
+            font-family: 'Roboto', sans-serif; /* Fonte Roboto */
         }
         .hidden-password {
             color: #888;
             font-style: italic;
         }
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .credential-text {
+            flex: 1;
+            margin-right: 10px;
+            font-weight: normal;
+            font-family: 'Poppins', sans-serif; /* Fonte Poppins */
+        }
+        #msg {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        #clear-btn {
+            background-color: #cccccc;
+            color: #333333;
+        }
+        .icon-delete {
+            margin-left: 10px;
+            cursor: pointer;
+            color: #dc3545; /* Vermelho claro */
+        }
+        .btn-danger-custom {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .input-group input {
+            font-family: 'Poppins', sans-serif; /* Fonte Poppins */
+        }
+        .input-group .input-group-append button {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+        }
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            .credential-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body class="container mt-5">
     <h1 class="mb-4">Gerenciador de Senhas 🔐</h1>
-    <p id="msg">Credenciais Armazenadas</p>
+    <p>Este programa permite armazenar, visualizar e gerenciar senhas de forma segura. Você pode adicionar novas credenciais e remover as que não precisar mais. Para proteger as informações, as senhas são exibidas com ocultação e você pode revelá-las temporariamente para consulta.</p>
     <div class="input-group mb-3">
         <input type="text" id="search-login" class="form-control" placeholder="Pesquisar site ou sistema">
         <div class="input-group-append">
             <span class="input-group-text">🔍</span>
         </div>
     </div>
-    <ul id="password-list" class="list-group mb-3"></ul>
     <div class="input-group mb-3">
         <input type="text" id="new-site" class="form-control" placeholder="Digite o site ou sistema" maxlength="35">
         <input type="text" id="new-login" class="form-control" placeholder="Digite o login" maxlength="35">
-        <input type="text" id="new-password" class="form-control" placeholder="Digite a senha" maxlength="35">
+        <input type="password" id="new-password" class="form-control" placeholder="Digite a senha" maxlength="35">
         <div class="input-group-append">
-            <button class="btn btn-secondary" type="button" onclick="addCredential()">Adicionar Credencial</button>
+            <button class="btn btn-danger-custom" type="button" onclick="addCredential()">Adicionar Credencial</button>
         </div>
     </div>
-    <button class="btn btn-danger mr-2" onclick="clearPasswords()">Apagar Tudo</button>
+    <button id="clear-btn" class="btn mr-2" onclick="clearPasswords()">Apagar Tudo</button>
+    <p id="msg" class="mt-4">Credenciais Armazenadas</p>
+    <ul id="password-list" class="list-group mb-3"></ul>
 
     <script>
         document.addEventListener("DOMContentLoaded", loadPasswords);
@@ -43,21 +96,12 @@
             const siteInput = document.getElementById('new-site');
             const loginInput = document.getElementById('new-login');
             const passwordInput = document.getElementById('new-password');
-            const passwordList = document.getElementById('password-list');
             const siteText = siteInput.value.trim();
             const loginText = loginInput.value.trim();
             const passwordText = passwordInput.value.trim();
 
             if (siteText !== '' && loginText !== '' && passwordText !== '') {
-                const newCredential = document.createElement('li');
-                newCredential.textContent = `Site/Sistema: ${siteText}, Login: ${loginText}, Senha: [Oculto]`;
-                newCredential.classList.add('list-group-item', 'hidden-password');
-                newCredential.dataset.site = siteText;
-                newCredential.dataset.login = loginText;
-                newCredential.dataset.password = passwordText;
-                newCredential.onclick = togglePasswordVisibility;
-                passwordList.appendChild(newCredential);
-
+                createCredentialElement(siteText, loginText, passwordText);
                 saveCredential(siteText, loginText, passwordText);
                 siteInput.value = '';
                 loginInput.value = '';
@@ -65,13 +109,47 @@
             }
         }
 
+        function createCredentialElement(site, login, password) {
+            const passwordList = document.getElementById('password-list');
+            const newCredential = document.createElement('li');
+            newCredential.classList.add('list-group-item', 'credential-item', 'hidden-password');
+            
+            const credentialText = document.createElement('span');
+            credentialText.className = 'credential-text';
+            credentialText.textContent = `Site/Sistema: ${site}, Login: ${login}, Senha: [Oculto]`;
+            credentialText.dataset.site = site;
+            credentialText.dataset.login = login;
+            credentialText.dataset.password = password;
+            credentialText.onclick = togglePasswordVisibility;
+
+            const removeButton = document.createElement('span');
+            removeButton.classList.add('icon-delete');
+            removeButton.innerText = 'Apagar';
+            removeButton.onclick = () => removeCredential(newCredential, site, login);
+
+            newCredential.appendChild(credentialText);
+            newCredential.appendChild(removeButton);
+            passwordList.appendChild(newCredential);
+        }
+
         function togglePasswordVisibility() {
             if (this.classList.contains('hidden-password')) {
                 this.textContent = `Site/Sistema: ${this.dataset.site}, Login: ${this.dataset.login}, Senha: ${this.dataset.password}`;
                 this.classList.remove('hidden-password');
+                this.style.fontWeight = 'bold';
             } else {
                 this.textContent = `Site/Sistema: ${this.dataset.site}, Login: ${this.dataset.login}, Senha: [Oculto]`;
                 this.classList.add('hidden-password');
+                this.style.fontWeight = 'normal';
+            }
+        }
+
+        function removeCredential(element, site, login) {
+            if (confirm("Tem certeza de que deseja remover esta credencial?")) {
+                element.remove();
+                let credentials = JSON.parse(localStorage.getItem('credentials')) || [];
+                credentials = credentials.filter(cred => !(cred.site === site && cred.login === login));
+                localStorage.setItem('credentials', JSON.stringify(credentials));
             }
         }
 
@@ -91,16 +169,8 @@
 
         function loadPasswords() {
             const credentials = JSON.parse(localStorage.getItem('credentials')) || [];
-            const passwordList = document.getElementById('password-list');
             credentials.forEach(({ site, login, password }) => {
-                const newCredential = document.createElement('li');
-                newCredential.textContent = `Site/Sistema: ${site}, Login: ${login}, Senha: [Oculto]`;
-                newCredential.classList.add('list-group-item', 'hidden-password');
-                newCredential.dataset.site = site;
-                newCredential.dataset.login = login;
-                newCredential.dataset.password = password;
-                newCredential.onclick = togglePasswordVisibility;
-                passwordList.appendChild(newCredential);
+                createCredentialElement(site, login, password);
             });
         }
 
@@ -108,17 +178,19 @@
 
         function filterCredentials() {
             const searchValue = document.getElementById('search-login').value.toLowerCase();
-            const credentials = document.querySelectorAll('#password-list li');
+            const credentials = document.querySelectorAll('#password-list li .credential-text');
             
             credentials.forEach(credential => {
                 const site = credential.dataset.site.toLowerCase();
-                if (site.includes(searchValue)) {
-                    credential.style.display = '';
-                } else {
-                    credential.style.display = 'none';
-                }
+                credential.parentElement.style.display = site.includes(searchValue) ? '' : 'none';
             });
         }
+
+        document.getElementById('new-password').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                addCredential();
+            }
+        });
     </script>
 </body>
 </html>
