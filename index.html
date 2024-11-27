@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,89 +7,35 @@
     <title>Gerenciador de Senhas 🔐</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #b3e0ff;
-            color: #000000;
-            font-family: 'Roboto', sans-serif; /* Fonte Roboto */
-        }
-        .hidden-password {
-            color: #888;
-            font-style: italic;
-        }
-        .credential-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #ffffff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .credential-text {
-            flex: 1;
-            margin-right: 10px;
-            font-weight: normal;
-            font-family: 'Poppins', sans-serif; /* Fonte Poppins */
-        }
-        #msg {
-            font-size: 1.2em;
-            font-weight: 500;
-        }
-        #clear-btn {
-            background-color: #cccccc;
-            color: #333333;
-        }
-        .icon-delete {
-            margin-left: 10px;
-            cursor: pointer;
-            color: #dc3545; /* Vermelho claro */
-        }
-        .btn-danger-custom {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-        .input-group input {
-            font-family: 'Poppins', sans-serif; /* Fonte Poppins */
-        }
-        .input-group .input-group-append button {
-            font-family: 'Roboto', sans-serif;
-            font-weight: 500;
-        }
-        @media (max-width: 576px) {
-            h1 {
-                font-size: 1.5rem;
-            }
-            .credential-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="main.css">
+    
+        
 </head>
 <body class="container mt-5">
     <h1 class="mb-4">Gerenciador de Senhas 🔐</h1>
     <p>Este programa permite armazenar, visualizar e gerenciar senhas de forma segura. Você pode adicionar novas credenciais e remover as que não precisar mais. Para proteger as informações, as senhas são exibidas com ocultação e você pode revelá-las temporariamente para consulta.</p>
-    <div class="input-group mb-3">
-        <input type="text" id="search-login" class="form-control" placeholder="Pesquisar site ou sistema">
-        <div class="input-group-append">
-            <span class="input-group-text">🔍</span>
+    
+        <h3>Pesquisar site ou sistema</h3>
+        <div class="input-group mb-3">
+            <input type="text" id="search-login" class="form-control" placeholder="Pesquisar site ou sistema">
+            <div class="input-group-append">
+                <span class="input-group-text">🔍</span>
+            </div>
         </div>
-    </div>
-    <div class="input-group mb-3">
-        <input type="text" id="new-site" class="form-control" placeholder="Digite o site ou sistema" maxlength="35">
-        <input type="text" id="new-login" class="form-control" placeholder="Digite o login" maxlength="35">
-        <input type="password" id="new-password" class="form-control" placeholder="Digite a senha" maxlength="35">
-        <div class="input-group-append">
-            <button class="btn btn-danger-custom" type="button" onclick="addCredential()">Adicionar Credencial</button>
-        </div>
-    </div>
-    <button id="clear-btn" class="btn mr-2" onclick="clearPasswords()">Apagar Tudo</button>
-    <p id="msg" class="mt-4">Credenciais Armazenadas</p>
-    <ul id="password-list" class="list-group mb-3"></ul>
-
+        <div class="input-group mb-3 input-flex-container">
+            <h3>Site ou Sistema</h3>
+            <input type="text" id="new-site" class="form-control" placeholder="Digite o site ou sistema" maxlength="35">
+            <h3>Login</h3>
+            <input type="text" id="new-login" class="form-control" placeholder="Digite o login" maxlength="35">
+            <h3>Senha</h3>
+            <input type="password" id="new-password" class="form-control" placeholder="Digite a senha" maxlength="35">
+            <div class="input-group-append">
+                <button class="btn btn-danger-custom" type="button" onclick="addCredential()">Adicionar Credencial</button>
+            </div>
+        </div>        
+        <button id="clear-btn" class="btn mr-2" onclick="clearPasswords()">Apagar Tudo</button>
+        <p id="msg" class="mt-4">Credenciais Armazenadas</p>
+        <ul id="password-list" class="list-group mb-3"></ul>
     <script>
         document.addEventListener("DOMContentLoaded", loadPasswords);
 
@@ -101,13 +48,27 @@
             const passwordText = passwordInput.value.trim();
 
             if (siteText !== '' && loginText !== '' && passwordText !== '') {
+                const credentials = JSON.parse(localStorage.getItem('credentials')) || [];
+                
+                // Verificar duplicação
+                const isDuplicate = credentials.some(cred => cred.site.toLowerCase() === siteText.toLowerCase());
+                
+                if (isDuplicate) {
+                    alert(`O sistema "${siteText}" já está cadastrado!`);
+                    return; // Impede a adição da credencial duplicada
+                }
+
+                // Se não for duplicado, adiciona a credencial
                 createCredentialElement(siteText, loginText, passwordText);
                 saveCredential(siteText, loginText, passwordText);
                 siteInput.value = '';
                 loginInput.value = '';
                 passwordInput.value = '';
+            } else {
+                alert("Por favor, preencha todos os campos antes de adicionar.");
             }
         }
+
 
         function createCredentialElement(site, login, password) {
             const passwordList = document.getElementById('password-list');
